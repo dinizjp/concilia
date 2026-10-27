@@ -1,0 +1,104 @@
+{
+  "identidade": {
+    "titulo": "Ana & Bruno",
+    "empresa_nome": "",
+    "empresa_cartao": "",
+    "nota_renda": ""
+  },
+  "_doc": "Classificação usada por build_report.py. Ajuste os nomes às categorias do SEU Organizze. Categoria não listada cai em 'variavel' e gera aviso no relatório.",
+  "grupos_despesa": {
+    "fixo": {
+      "label": "Fixos",
+      "descricao": "Contratos e contas que vêm todo mês; mudam pouco no curto prazo",
+      "categorias": [
+        "Aluguel",
+        "Condomínio",
+        "Energia",
+        "Agua",
+        "Internet",
+        "Plano de Saude",
+        "Educação",
+        "Assinaturas e serviços",
+        "Taxas de banco"
+      ]
+    },
+    "variavel": {
+      "label": "Variáveis",
+      "descricao": "Consumo do dia a dia; é aqui que dá pra ajustar",
+      "categorias": [
+        "Alimentação",
+        "Mercado",
+        "Rolês",
+        "Compras",
+        "Roupa e Sapato",
+        "Transporte",
+        "Viagem",
+        "Farmacia",
+        "Presentes e doações",
+        "Cuidados básicos",
+        "Casa",
+        "Pets",
+        "Outros"
+      ]
+    },
+    "patrimonio": {
+      "label": "Construindo patrimônio",
+      "descricao": "Aportes, reserva e consórcio; subir aqui é bom",
+      "categorias": [
+        "Investimentos",
+        "Reserva"
+      ]
+    },
+    "evento": {
+      "label": "Evento",
+      "descricao": "Projeto pontual (casamento, mudança, reforma); separado para não distorcer o consumo do mês",
+      "categorias": []
+    },
+    "empresa": {
+      "label": "Empresa",
+      "descricao": "Custos pagos pela conta ou cartão PJ; saem da renda antes do consumo",
+      "categorias": []
+    }
+  },
+  "dividir_por_conta": {
+    "_doc": "Categorias que mudam de dono conforme quem pagou (conta/cartão PJ = empresa). Deixe vazio se não tiver empresa.",
+    "categorias": []
+  },
+  "grupos_receita": {
+    "recorrente": {
+      "label": "Salários",
+      "categorias": [
+        "Salário"
+      ]
+    },
+    "extra": {
+      "label": "Receitas extras",
+      "categorias": [
+        "Outras receitas",
+        "reembolsos"
+      ]
+    },
+    "resgate": {
+      "label": "Resgates de investimento",
+      "descricao": "Dinheiro de vocês mesmos voltando de investimento/dólar. Não é renda nova: abate do que foi guardado.",
+      "categorias": [
+        "Investimentos"
+      ]
+    }
+  },
+  "contas": {
+    "corrente": [
+      "Conta Corrente"
+    ],
+    "reserva": [
+      "Reserva"
+    ],
+    "empresa": []
+  },
+  "cartoes": {
+    "pessoal": [
+      "Meu Cartão"
+    ],
+    "empresa": []
+  }
+}

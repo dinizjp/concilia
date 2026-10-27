@@ -1,0 +1,433 @@
+<title>__REPORT_TITLE__</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: uma coluna de leitura (~760px) para os dois lerem juntos; resumo em cima, detalhe embaixo, pauta no fim. */
+:root {
+  --bg: #f4f6f5;
+  --surface: #ffffff;
+  --ink: #15201c;
+  --ink-2: #4b5853;
+  --ink-3: #7a8782;
+  --line: #dfe5e2;
+  --accent: #0f6b55;
+  --accent-soft: #e2f0eb;
+  --good: #1a7f45;
+  --warn: #a86400;
+  --bad: #b3261e;
+  --s-fixo: #2a78d6;
+  --s-variavel: #eb6834;
+  --s-patrimonio: #1baf7a;
+  --s-evento: #eda100;
+  --s-receita: #15201c;
+  --f-display: "Bricolage Grotesque", "Avenir Next", system-ui, sans-serif;
+  --f-body: "IBM Plex Sans", system-ui, -apple-system, sans-serif;
+  --f-num: "IBM Plex Mono", ui-monospace, "SF Mono", Menlo, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #111715; --surface: #18201d; --ink: #e9efec; --ink-2: #b4c0bb; --ink-3: #85928d;
+    --line: #2a3531; --accent: #4fc3a1; --accent-soft: #1b2e28;
+    --good: #4cc27c; --warn: #e0a040; --bad: #f07a72;
+    --s-fixo: #3987e5; --s-variavel: #d95926; --s-patrimonio: #199e70; --s-evento: #c98500; --s-receita: #e9efec;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #111715; --surface: #18201d; --ink: #e9efec; --ink-2: #b4c0bb; --ink-3: #85928d;
+  --line: #2a3531; --accent: #4fc3a1; --accent-soft: #1b2e28;
+  --good: #4cc27c; --warn: #e0a040; --bad: #f07a72;
+  --s-fixo: #3987e5; --s-variavel: #d95926; --s-patrimonio: #199e70; --s-evento: #c98500; --s-receita: #e9efec;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+body { background: var(--bg); color: var(--ink); font: 15px/1.55 var(--f-body); }
+.wrap { max-width: 800px; margin: 0 auto; padding-block: 32px 64px;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px));
+  display: grid; gap: 40px; }
+h1, h2, h3 { font-family: var(--f-display); text-wrap: balance; margin: 0; line-height: 1.15; }
+h1 { font-size: 2.1rem; font-weight: 700; letter-spacing: -0.01em; }
+h2 { font-size: 1.3rem; font-weight: 700; }
+h3 { font-size: 1rem; font-weight: 500; }
+p { margin: 0; }
+.eyebrow { font: 500 0.72rem/1 var(--f-body); letter-spacing: 0.09em; text-transform: uppercase; color: var(--ink-3); }
+.num { font-family: var(--f-num); font-variant-numeric: tabular-nums; }
+.muted { color: var(--ink-2); }
+.small { font-size: 0.85rem; }
+section { display: grid; gap: 16px; min-width: 0; }
+.sec-head { display: grid; gap: 6px; }
+
+header { display: grid; gap: 10px; }
+.chips { display: flex; flex-wrap: wrap; gap: 8px; }
+.chip { font-size: 0.78rem; padding: 3px 10px; border-radius: 999px; background: var(--accent-soft); color: var(--accent); font-weight: 500; }
+
+.tiles { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 1px; background: var(--line); border: 1px solid var(--line); border-radius: 10px; overflow: hidden; }
+.tile { background: var(--surface); padding: 16px; display: grid; gap: 6px; align-content: start; min-width: 0; }
+.tile .v { font: 500 1.35rem/1.1 var(--f-num); font-variant-numeric: tabular-nums; }
+.tile .d { font-size: 0.8rem; color: var(--ink-2); }
+@media (max-width: 640px) { .tiles { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+
+.up { color: var(--bad); } .down { color: var(--good); } .flat { color: var(--ink-3); }
+.pos { color: var(--good); } .neg { color: var(--bad); }
+
+.destaques { display: grid; gap: 10px; margin: 0; padding: 0; list-style: none; }
+.destaques li { padding: 12px 14px; background: var(--surface); border: 1px solid var(--line); border-radius: 8px; }
+
+.chart-box { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 16px; display: grid; gap: 12px; position: relative; }
+.legend { display: flex; flex-wrap: wrap; gap: 14px; font-size: 0.8rem; color: var(--ink-2); }
+.legend span { display: inline-flex; align-items: center; gap: 6px; }
+.sw { width: 10px; height: 10px; border-radius: 2px; display: inline-block; }
+.sw.line { height: 2px; width: 14px; border-radius: 0; }
+.chart-scroll { overflow-x: auto; }
+svg text { fill: var(--ink-3); font: 11px var(--f-num); }
+.tip { position: absolute; pointer-events: none; background: var(--ink); color: var(--bg); font-size: 0.78rem; padding: 8px 10px; border-radius: 6px; display: grid; gap: 2px; min-width: 170px; z-index: 5; }
+.tip b { font-weight: 600; }
+.tip .r { display: flex; justify-content: space-between; gap: 12px; font-family: var(--f-num); }
+
+.tbl-wrap { overflow-x: auto; background: var(--surface); border: 1px solid var(--line); border-radius: 10px; }
+table { width: 100%; border-collapse: collapse; font-size: 0.88rem; }
+th, td { padding: 8px 12px; text-align: right; border-bottom: 1px solid var(--line); white-space: nowrap; }
+th:first-child, td:first-child { text-align: left; white-space: normal; }
+th { font: 500 0.72rem var(--f-body); letter-spacing: 0.06em; text-transform: uppercase; color: var(--ink-3); background: var(--surface); }
+td { font-family: var(--f-num); font-variant-numeric: tabular-nums; }
+td:first-child, td.t { font-family: var(--f-body); }
+td.t { text-align: left; }
+th.t { text-align: left; }
+tr:last-child td { border-bottom: 0; }
+tr.tot td { font-weight: 600; border-top: 2px solid var(--line); }
+tr.foco td { background: var(--accent-soft); }
+
+.two { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+@media (max-width: 640px) { .two { grid-template-columns: 1fr; } }
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 16px; display: grid; gap: 10px; align-content: start; min-width: 0; }
+.card-head { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; flex-wrap: wrap; }
+.rows { display: grid; gap: 6px; }
+.row { display: grid; grid-template-columns: minmax(0, 1fr) auto auto; gap: 10px; font-size: 0.88rem; align-items: baseline; }
+.row .n { min-width: 0; overflow-wrap: anywhere; }
+.row .v { font-family: var(--f-num); font-variant-numeric: tabular-nums; }
+.row .x { font-family: var(--f-num); font-size: 0.78rem; min-width: 88px; text-align: right; white-space: nowrap; }
+.bar { height: 6px; border-radius: 3px; background: var(--line); overflow: hidden; }
+.bar i { display: block; height: 100%; border-radius: 3px; }
+
+.pauta { counter-reset: p; display: grid; gap: 12px; margin: 0; padding: 0; list-style: none; }
+.pauta li { counter-increment: p; display: grid; grid-template-columns: 32px minmax(0, 1fr); gap: 12px; padding: 14px 16px; background: var(--surface); border: 1px solid var(--line); border-radius: 10px; }
+.pauta li::before { content: counter(p); font: 700 1.2rem/1 var(--f-display); color: var(--accent); }
+.pauta .q { font-weight: 600; }
+.pauta .tema { font-size: 0.72rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-3); }
+
+.avisos { font-size: 0.82rem; color: var(--ink-2); display: grid; gap: 4px; padding-left: 18px; margin: 0; }
+.metodo { font-size: 0.82rem; color: var(--ink-3); display: grid; gap: 6px; border-top: 1px solid var(--line); padding-top: 16px; }
+button.toggle { justify-self: start; font: 500 0.8rem var(--f-body); color: var(--accent); background: none; border: 1px solid var(--line); border-radius: 6px; padding: 4px 10px; cursor: pointer; }
+button.toggle:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.empty { color: var(--ink-3); font-size: 0.88rem; }
+
+/* abas: relatório x roteiro da conversa */
+.tabs { display: flex; gap: 4px; border-bottom: 1px solid var(--line); margin-top: -16px; }
+.tabs button { font: 500 0.92rem var(--f-body); color: var(--ink-2); background: none; border: 0; border-bottom: 2px solid transparent; padding: 10px 14px; margin-bottom: -1px; cursor: pointer; }
+.tabs button[aria-selected="true"] { color: var(--accent); border-bottom-color: var(--accent); }
+.tabs button:focus-visible { outline: 2px solid var(--accent); outline-offset: -2px; }
+.panel { display: grid; gap: 40px; min-width: 0; }
+.passos { counter-reset: s; display: grid; gap: 14px; margin: 0; padding: 0; list-style: none; }
+.passos > li { counter-increment: s; display: grid; grid-template-columns: 40px minmax(0, 1fr); gap: 14px; padding: 16px; background: var(--surface); border: 1px solid var(--line); border-radius: 10px; }
+.passos > li::before { content: counter(s); font: 700 1.5rem/1 var(--f-display); color: var(--accent); }
+.passos .corpo { display: grid; gap: 8px; min-width: 0; }
+.passos h3 { display: flex; flex-wrap: wrap; gap: 8px; align-items: baseline; }
+.passos .tempo { font: 500 0.72rem var(--f-body); letter-spacing: 0.06em; text-transform: uppercase; color: var(--ink-3); }
+.passos ul { margin: 0; padding-left: 18px; display: grid; gap: 4px; }
+.conta { background: var(--accent-soft); border-radius: 8px; padding: 10px 12px; font-size: 0.88rem; }
+.regras { display: grid; gap: 8px; margin: 0; padding-left: 18px; }
+.checks { list-style: none; margin: 0; padding: 0; display: grid; gap: 4px; }
+.checks li::before { content: "✓ "; color: var(--good); font-weight: 600; }
+.checks li.falha::before { content: "✗ "; color: var(--bad); }
+</style>
+
+<div class="wrap" id="app"></div>
+
+<script>
+const D = __REPORT_DATA__;
+const ID = D.identidade || {};
+const EVENTO = (D.grupos.evento && D.grupos.evento.label) || "Evento";
+const $ = (h) => { const t = document.createElement("template"); t.innerHTML = h.trim(); return t.content.firstElementChild; };
+const brl = (c, opts = {}) => {
+  if (c === null || c === undefined) return "—";
+  const v = c / 100;
+  const s = v.toLocaleString("pt-BR", { style: "currency", currency: "BRL", maximumFractionDigits: opts.cents ? 2 : 0, minimumFractionDigits: opts.cents ? 2 : 0 });
+  return opts.sign && v > 0 ? "+" + s : s;
+};
+const pct = (p, sign) => p === null || p === undefined ? "—" : (sign && p > 0 ? "+" : "") + (p * 100).toFixed(Math.abs(p) < 0.1 ? 1 : 0).replace(".", ",") + "%";
+const esc = (s) => String(s ?? "").replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+// para despesa: subir é ruim (vermelho); para receita/sobra: subir é bom
+const trend = (p, bomSubir) => { if (p === null || p === undefined || Math.abs(p) < 0.03) return "flat"; return (p > 0) === bomSubir ? "pos" : "neg"; };
+const multi = D.foco.length > 1;
+// variação de categoria em R$/mês (não em %: % sobre base pequena engana, ex. +519%)
+const deltaTag = (c) => {
+  if (!D.cmp_label) return "";
+  const de = `${D.cmp_label.ref}: ${brl(c.media_ref)}/mês → ${D.cmp_label.atual}: ${brl(c.media_atual)}/mês`;
+  if (!c.media_ref) return `<span class="x flat" title="${esc(de)}">novo</span>`;
+  if (!c.media_atual) return `<span class="x down" title="${esc(de)}">parou</span>`;
+  const d = c.media_atual - c.media_ref;
+  if (Math.abs(d) < 2000 || Math.abs(d / c.media_ref) < 0.05) return `<span class="x flat" title="${esc(de)}">=</span>`;
+  return `<span class="x ${d > 0 ? "up" : "down"}" title="${esc(de)}">${d > 0 ? "▲ +" : "▼ −"}${brl(Math.abs(d))}</span>`;
+};
+const fa = D.foco_agregado, cmp = D.comparacao;
+const root = document.getElementById("app");
+let app = root;
+const cmpPanorama = !!D.cmp_label && D.cmp_atual.length !== D.foco.length;
+const refLabel = D.cmp_label ? (cmpPanorama ? `média ${D.cmp_label.ref}` : (D.ref_meses.length === 1 ? D.cmp_label.ref : `média ${D.cmp_label.ref}`)) : null;
+const tipoLabel = { mensal: "Relatório mensal", trimestral: "Relatório trimestral", panorama: "Panorama do ano" }[D.tipo] || "Relatório";
+
+/* ---------- header ---------- */
+app.append($(`<header>
+  <p class="eyebrow">${tipoLabel}${ID.titulo ? " · " + esc(ID.titulo) : ""}</p>
+  <h1>${esc(D.titulo)}</h1>
+  <div class="chips">
+    <span class="chip">${D.foco.length} ${D.foco.length > 1 ? "meses" : "mês"}</span>
+    ${D.cmp_label ? `<span class="chip">${cmpPanorama ? `tendência: ${esc(D.cmp_label.atual)} vs ${esc(D.cmp_label.ref)}` : `comparado com ${esc(refLabel)}`}</span>` : ""}
+    ${D.gerado_em ? `<span class="chip">dados de ${esc(D.gerado_em)}</span>` : ""}
+  </div>
+</header>`));
+
+/* ---------- abas ---------- */
+const tabs = $(`<div class="tabs" role="tablist">
+  <button role="tab" type="button" id="tab-relatorio" aria-controls="relatorio" aria-selected="true">Relatório</button>
+  <button role="tab" type="button" id="tab-roteiro" aria-controls="roteiro" aria-selected="false">Roteiro da conversa</button>
+</div>`);
+const painelRel = $(`<div class="panel" id="relatorio" role="tabpanel" aria-labelledby="tab-relatorio"></div>`);
+const painelRot = $(`<div class="panel" id="roteiro" role="tabpanel" aria-labelledby="tab-roteiro" hidden></div>`);
+root.append(tabs, painelRel, painelRot);
+app = painelRel;
+const abrir = (qual) => {
+  tabs.querySelectorAll("button").forEach(b => b.setAttribute("aria-selected", String(b.getAttribute("aria-controls") === qual)));
+  painelRel.hidden = qual !== "relatorio"; painelRot.hidden = qual !== "roteiro";
+};
+tabs.addEventListener("click", (e) => { const b = e.target.closest("button"); if (b) abrir(b.getAttribute("aria-controls")); });
+if (location.hash === "#roteiro") abrir("roteiro");
+
+/* ---------- tiles ---------- */
+const m = multi ? fa.media : fa.total;
+const sufixo = multi ? " /mês" : "";
+const tile = (eyebrow, valor, detalhe) => `<div class="tile"><span class="eyebrow">${eyebrow}</span><span class="v">${valor}</span><span class="d">${detalhe}</span></div>`;
+const cmpTxt = (k, bomSubir) => cmp && cmp[k] && cmp[k].delta_pct !== null ? (cmpPanorama ? `${esc(D.cmp_label.atual)}: ${brl(cmp[k].atual)} (<span class="${trend(cmp[k].delta_pct, bomSubir)}">${pct(cmp[k].delta_pct, true)}</span>)` : `<span class="${trend(cmp[k].delta_pct, bomSubir)}">${pct(cmp[k].delta_pct, true)}</span> vs ${esc(refLabel)}`) : "";
+const taxaRef = cmp && cmp.taxa_poupanca.ref !== null ? (cmpPanorama ? ` · ${esc(D.cmp_label.atual)}: ${pct(cmp.taxa_poupanca.atual)}` : ` · antes ${pct(cmp.taxa_poupanca.ref)}`) : "";
+const pat = D.patrimonio;
+app.append($(`<section>
+  <div class="tiles">
+    ${tile("Renda líquida" + sufixo, brl(m.renda_liquida), (cmpTxt("renda_liquida", true) ? cmpTxt("renda_liquida", true) + " · " : "") + `salários ${brl(m.receita_recorrente)} − empresa ${brl(m.empresa)}`)}
+    ${tile("Consumo" + sufixo, brl(m.consumo), cmpTxt("consumo", false) || "fixos + variáveis")}
+    ${tile("Sobra do mês" + sufixo, `<span class="${m.sobra_estrutural >= 0 ? "pos" : "neg"}">${brl(m.sobra_estrutural)}</span>`, `${pct(fa.taxa_poupanca)} da renda líquida${taxaRef}`)}
+    ${tile("Patrimônio hoje", pat ? brl(pat.liquido) : "—", pat ? `contas ${brl(pat.contas)} − faturas ${brl(pat.faturas_abertas)}` : "")}
+  </div>
+  <p class="small muted">Fora do consumo${multi ? " (média/mês)" : ""}: guardado ${brl(m.patrimonio)}${m.receita_resgate ? ` − resgatado ${brl(m.receita_resgate)} = guardado líquido <b>${brl(m.aporte_liquido)}</b>` : ""} · ${EVENTO.toLowerCase()} ${brl(m.evento)} · receitas extras ${brl(m.receita_extra)}. Os custos da empresa já saem da renda líquida. Resultado final com tudo: <b class="${m.sobra_total >= 0 ? "pos" : "neg"}">${brl(m.sobra_total)}</b>.</p>
+  ${D.meta ? `<p class="small muted">Taxa de poupança típica de vocês (mediana do histórico): <b>${pct(D.meta.mediana_historica)}</b>. Ponto de partida sugerido para meta: <b>${pct(D.meta.meta_sugerida)}</b> da renda líquida.</p>` : ""}
+</section>`));
+
+/* ---------- destaques ---------- */
+if (D.destaques.length) {
+  app.append($(`<section><div class="sec-head"><p class="eyebrow">Em uma olhada</p><h2>O que mudou</h2></div>
+    <ul class="destaques">${D.destaques.map(d => `<li>${esc(d)}</li>`).join("")}</ul></section>`));
+}
+
+/* ---------- gráfico mensal ---------- */
+(function chart() {
+  const S = D.serie;
+  const keys = ["fixo", "variavel", "patrimonio", "evento"];
+  const colors = { fixo: "var(--s-fixo)", variavel: "var(--s-variavel)", patrimonio: "var(--s-patrimonio)", evento: "var(--s-evento)" };
+  const labels = { fixo: "Fixos", variavel: "Variáveis", patrimonio: "Patrimônio", evento: EVENTO };
+  const maxV = Math.max(...S.map(s => Math.max(keys.reduce((a, k) => a + s[k], 0), s.renda_liquida)), 1);
+  const step = (() => { const raw = maxV / 4 / 100; const p = Math.pow(10, Math.floor(Math.log10(raw))); const n = [1, 2, 2.5, 5, 10].find(x => x * p >= raw); return n * p * 100; })();
+  const top = Math.ceil(maxV / step) * step;
+  const W = Math.max(560, S.length * 64 + 70), H = 260, L = 58, R = 12, T = 12, B = 30;
+  const pw = W - L - R, ph = H - T - B, bw = Math.min(34, pw / S.length * 0.55);
+  const y = v => T + ph - (v / top) * ph;
+  const x = i => L + pw / S.length * (i + 0.5);
+  let g = "";
+  for (let v = 0; v <= top + 1; v += step) {
+    g += `<line x1="${L}" x2="${W - R}" y1="${y(v)}" y2="${y(v)}" stroke="var(--line)" stroke-width="1"/>`;
+    g += `<text x="${L - 8}" y="${y(v) + 4}" text-anchor="end">${(v / 100000).toLocaleString("pt-BR")}k</text>`;
+  }
+  S.forEach((s, i) => {
+    let acc = 0;
+    const segs = keys.filter(k => s[k] > 0);
+    segs.forEach((k, j) => {
+      const y0 = y(acc), y1 = y(acc + s[k]);
+      const hgt = Math.max(0, y0 - y1 - (j < segs.length - 1 ? 2 : 0));
+      const isTop = j === segs.length - 1;
+      const r = isTop ? Math.min(4, hgt / 2) : 0;
+      const xx = x(i) - bw / 2;
+      g += isTop && r > 0
+        ? `<path d="M${xx},${y0} V${y1 + r} Q${xx},${y1} ${xx + r},${y1} H${xx + bw - r} Q${xx + bw},${y1} ${xx + bw},${y1 + r} V${y0} Z" fill="${colors[k]}" opacity="${s.no_foco ? 1 : 0.55}"/>`
+        : `<rect x="${xx}" y="${y0 - hgt}" width="${bw}" height="${hgt}" fill="${colors[k]}" opacity="${s.no_foco ? 1 : 0.55}"/>`;
+      acc += s[k];
+    });
+    // marcador de salários: traço horizontal sobre a barra
+    g += `<line x1="${x(i) - bw / 2 - 6}" x2="${x(i) + bw / 2 + 6}" y1="${y(s.renda_liquida)}" y2="${y(s.renda_liquida)}" stroke="var(--s-receita)" stroke-width="2"/>`;
+    g += `<text x="${x(i)}" y="${H - 10}" text-anchor="middle" style="${s.no_foco ? "fill:var(--ink);font-weight:600" : ""}">${s.label}</text>`;
+    g += `<rect class="hit" data-i="${i}" x="${x(i) - pw / S.length / 2}" y="${T}" width="${pw / S.length}" height="${ph}" fill="transparent"/>`;
+  });
+  const box = $(`<section><div class="sec-head"><p class="eyebrow">Mês a mês</p><h2>Para onde foi o dinheiro</h2>
+      <p class="small muted">Barras = saídas do casal (sem empresa). Traço escuro = renda líquida do mês (salários − custos da empresa). Barra acima do traço = gastou mais do que ganhou.</p></div>
+    <div class="chart-box">
+      <div class="legend">${keys.map(k => `<span><i class="sw" style="background:${colors[k]}"></i>${labels[k]}</span>`).join("")}<span><i class="sw line" style="background:var(--s-receita)"></i>Renda líquida</span></div>
+      <div class="chart-scroll"><svg viewBox="0 0 ${W} ${H}" width="${W}" height="${H}" role="img" aria-label="Saídas mensais por grupo e renda líquida">${g}</svg></div>
+      <div class="tip" hidden></div>
+      <button class="toggle" type="button" id="tgl-tabela">Ver tabela</button>
+      <div class="tbl-wrap" hidden id="tabela-mensal"><table><thead><tr><th>Mês</th><th>Salários (bruto)</th><th>Extras</th><th>Resgates</th><th>Fixos</th><th>Variáveis</th><th>Patrimônio</th><th>${EVENTO}</th><th>Empresa</th><th>Renda líquida</th><th>Sobra</th><th>Taxa</th></tr></thead>
+      <tbody>${S.map(s => `<tr class="${s.no_foco ? "foco" : ""}"><td>${s.label}</td><td>${brl(s.receita_recorrente)}</td><td>${brl(s.receita_extra)}</td><td>${brl(s.receita_resgate)}</td><td>${brl(s.fixo)}</td><td>${brl(s.variavel)}</td><td>${brl(s.patrimonio)}</td><td>${brl(s.evento)}</td><td>${brl(s.empresa)}</td><td>${brl(s.renda_liquida)}</td><td class="${s.sobra_estrutural >= 0 ? "pos" : "neg"}">${brl(s.sobra_estrutural)}</td><td>${pct(s.taxa_poupanca)}</td></tr>`).join("")}</tbody></table></div>
+    </div></section>`);
+  app.append(box);
+  const tip = box.querySelector(".tip"), cb = box.querySelector(".chart-box");
+  box.querySelectorAll(".hit").forEach(h => {
+    h.addEventListener("mousemove", (e) => {
+      const s = S[+h.dataset.i];
+      tip.innerHTML = `<b>${s.label}</b>` + [["Renda líquida", s.renda_liquida], ["Fixos", s.fixo], ["Variáveis", s.variavel], ["Patrimônio", s.patrimonio], [EVENTO, s.evento], ["Sobra", s.sobra_estrutural]].map(([n, v]) => `<div class="r"><span>${n}</span><span>${brl(v)}</span></div>`).join("");
+      tip.hidden = false;
+      const rb = cb.getBoundingClientRect();
+      let left = e.clientX - rb.left + 14; if (left + 190 > rb.width) left = e.clientX - rb.left - 190;
+      tip.style.left = left + "px"; tip.style.top = (e.clientY - rb.top - 20) + "px";
+    });
+    h.addEventListener("mouseleave", () => tip.hidden = true);
+  });
+  const btn = box.querySelector("#tgl-tabela"), tb = box.querySelector("#tabela-mensal");
+  btn.addEventListener("click", () => { tb.hidden = !tb.hidden; btn.textContent = tb.hidden ? "Ver tabela" : "Esconder tabela"; });
+})();
+
+/* ---------- ano a ano ---------- */
+if (D.anos && D.anos.length > 1) {
+  const cols = [["Renda líquida /mês", y => brl(y.media.renda_liquida)], ["Fixos /mês", y => brl(y.media.fixo)], ["Variáveis /mês", y => brl(y.media.variavel)],
+    ["Consumo /mês", y => brl(y.media.consumo)], ["Patrimônio /mês", y => brl(y.media.patrimonio)], ["Extras /mês", y => brl(y.media.receita_extra)], ["Resgates /mês", y => brl(y.media.receita_resgate)],
+    ["Sobra no período", y => `<span class="${y.total.sobra_estrutural >= 0 ? "pos" : "neg"}">${brl(y.total.sobra_estrutural)}</span>`], ["Taxa", y => pct(y.taxa_poupanca)]];
+  app.append($(`<section><div class="sec-head"><p class="eyebrow">Ano a ano</p><h2>Como o padrão mudou</h2>
+    <p class="small muted">Médias mensais de cada ano, para comparar anos com número de meses diferente.</p></div>
+    <div class="tbl-wrap"><table><thead><tr><th class="t">Ano</th>${cols.map(c => `<th>${c[0]}</th>`).join("")}</tr></thead>
+    <tbody>${D.anos.map(y => `<tr><td class="t">${esc(y.faixa)}</td>${cols.map(c => `<td>${c[1](y)}</td>`).join("")}</tr>`).join("")}</tbody></table></div></section>`));
+}
+
+/* ---------- fixos x variáveis ---------- */
+(function grupos() {
+  const card = (g) => {
+    const cats = D.categorias.filter(c => c.grupo === g);
+    const tot = cats.reduce((a, c) => a + c.media_mensal, 0);
+    const max = Math.max(...cats.map(c => c.media_mensal), 1);
+    const color = { fixo: "var(--s-fixo)", variavel: "var(--s-variavel)", patrimonio: "var(--s-patrimonio)", evento: "var(--s-evento)", empresa: "var(--ink-3)" }[g];
+    return `<div class="card"><div class="card-head"><h3>${esc(D.grupos[g].label)}</h3><span class="num">${brl(tot)}${sufixo}</span></div>
+      <p class="small muted">${esc(D.grupos[g].descricao)}</p>
+      <div class="rows">${cats.length ? cats.map(c => `<div class="row"><span class="n">${esc(c.nome)}</span><span class="v">${brl(c.media_mensal)}</span>
+        ${deltaTag(c)}</div>
+        <div class="bar"><i style="width:${(c.media_mensal / max * 100).toFixed(1)}%;background:${color}"></i></div>`).join("") : `<p class="empty">Nada neste período.</p>`}</div></div>`;
+  };
+  app.append($(`<section><div class="sec-head"><p class="eyebrow">Por categoria${multi ? " · média por mês" : ""}</p><h2>Fixos e variáveis</h2>
+    <p class="small muted">${D.cmp_label ? `Valor = média por mês ${multi ? "no período inteiro" : "no mês"}. Ao lado, quanto a categoria mudou por mês: média ${esc(D.cmp_label.atual)} comparada com ${esc(cmpPanorama ? D.cmp_label.ref : refLabel.replace(/^média /, ""))}. <span class="up">▲ vermelho</span> = gastaram mais; <span class="down">▼ verde</span> = gastaram menos; "parou" = não teve gasto no período recente. Passe o mouse para ver os dois valores.` : ""}</p></div>
+    <div class="two">${card("fixo")}${card("variavel")}</div>
+    <div class="two">${card("patrimonio")}${card("evento")}</div></section>`));
+})();
+
+/* ---------- receitas extras ---------- */
+if (D.receitas_extras.length) {
+  const tot = D.receitas_extras.reduce((a, r) => a + r.valor, 0);
+  app.append($(`<section><div class="sec-head"><p class="eyebrow">Entradas fora do salário</p><h2>Receitas extras</h2>
+    <p class="small muted">Não entram na sobra: são pontuais e não dá pra contar com elas todo mês.</p></div>
+    <div class="tbl-wrap"><table><thead><tr><th>Descrição</th><th class="t">Data</th><th class="t">Conta</th><th>Valor</th></tr></thead>
+    <tbody>${D.receitas_extras.map(r => `<tr><td>${esc(r.descricao)}${r.natureza ? ` <span class="muted small">· ${esc(r.natureza)}</span>` : ""}</td><td class="t">${esc(r.data || "")}</td><td class="t">${esc(r.conta || "")}</td><td>${brl(r.valor, { cents: true })}</td></tr>`).join("")}
+    <tr class="tot"><td>Total</td><td></td><td></td><td>${brl(tot, { cents: true })}</td></tr></tbody></table></div></section>`));
+}
+
+/* ---------- resgates ---------- */
+if (D.resgates && D.resgates.length) {
+  const tot = D.resgates.reduce((a, r) => a + r.valor, 0);
+  app.append($(`<section><div class="sec-head"><p class="eyebrow">Dinheiro guardado que voltou</p><h2>Resgates de investimento</h2>
+    <p class="small muted">Não é renda nova: é poupança de vocês voltando para a conta. Por isso fica fora das receitas extras e abate do que foi guardado no período (guardado ${brl(fa.total.patrimonio)} − resgatado ${brl(fa.total.receita_resgate)} = <b class="num">${brl(fa.total.aporte_liquido)}</b> líquido).</p></div>
+    <div class="tbl-wrap"><table><thead><tr><th>Descrição</th><th class="t">Data</th><th class="t">Conta</th><th>Valor</th></tr></thead>
+    <tbody>${D.resgates.map(r => `<tr><td>${esc(r.descricao)}</td><td class="t">${esc(r.data || "")}</td><td class="t">${esc(r.conta || "")}</td><td>${brl(r.valor, { cents: true })}</td></tr>`).join("")}
+    <tr class="tot"><td>Total</td><td></td><td></td><td>${brl(tot, { cents: true })}</td></tr></tbody></table></div></section>`));
+}
+
+/* ---------- reservas e saldos ---------- */
+if (D.saldos.length) {
+  const ordem = { reserva: 0, corrente: 1, empresa: 2, outra: 3 };
+  const tipoNome = { reserva: "Reserva", corrente: "Conta corrente", empresa: "Empresa", outra: "Outra" };
+  const rows = [...D.saldos].sort((a, b) => ordem[a.tipo] - ordem[b.tipo] || (b.fim ?? 0) - (a.fim ?? 0));
+  const reservas = rows.filter(r => r.tipo === "reserva");
+  const totR = reservas.reduce((a, r) => a + (r.fim ?? 0), 0), totRi = reservas.reduce((a, r) => a + (r.inicio ?? 0), 0);
+  app.append($(`<section><div class="sec-head"><p class="eyebrow">Onde o dinheiro está guardado</p><h2>Reservas e saldos</h2>
+    <p class="small muted">Saldo no início e no fim do período, por conta. Total em reservas: <b class="num">${brl(totR)}</b> (<span class="${trend(totRi ? (totR - totRi) / totRi : null, true)}">${brl(totR - totRi, { sign: true })}</span> no período).</p></div>
+    <div class="tbl-wrap"><table><thead><tr><th>Conta</th><th class="t">Tipo</th><th>Início</th><th>Fim</th><th>Variação</th></tr></thead>
+    <tbody>${rows.map(r => `<tr><td>${esc(r.conta)}</td><td class="t">${tipoNome[r.tipo]}</td><td>${brl(r.inicio)}</td><td>${brl(r.fim)}</td><td class="${(r.delta ?? 0) > 0 ? "pos" : (r.delta ?? 0) < 0 ? "neg" : ""}">${brl(r.delta, { sign: true })}</td></tr>`).join("")}</tbody></table></div></section>`));
+}
+
+/* ---------- compromissos ---------- */
+(function comp() {
+  const C = D.compromissos;
+  const parc = C.parcelas.length ? C.parcelas.map(p => `<div class="row"><span class="n">${esc(p.descricao)}${p.cartao ? ` <span class="muted small">· ${esc(p.cartao)}</span>` : ""}</span><span class="v">${brl(p.valor_parcela, { cents: true })}</span><span class="x muted">${p.restantes}x</span></div>`).join("") : `<p class="empty">Nenhuma parcela em aberto encontrada.</p>`;
+  const ass = C.assinaturas.length ? C.assinaturas.map(a => `<div class="row"><span class="n">${esc(a.nome)}</span><span class="v">${brl(a.valor_mensal, { cents: true })}</span><span class="x muted">/mês</span></div>`).join("") : `<p class="empty">Nenhuma assinatura detectada.</p>`;
+  const fat = C.faturas_abertas.length ? `<p class="small muted">Faturas em aberto: ${C.faturas_abertas.map(f => `${esc(f.cartao)} <b class="num">${brl(f.valor, { cents: true })}</b>${f.vencimento ? ` (vence ${esc(f.vencimento)})` : ""}`).join(" · ")}${C.contas_a_vencer_30d != null ? ` · contas fora do cartão a vencer em 30 dias: <b class="num">${brl(C.contas_a_vencer_30d)}</b>` : ""}</p>` : "";
+  app.append($(`<section><div class="sec-head"><p class="eyebrow">O que já está contratado</p><h2>Compromissos futuros</h2>
+    <p class="small muted">Parcelas + assinaturas somam <b class="num">${brl(C.parcelas_mensal + C.assinaturas_mensal)}/mês</b>${C.comprometido_pct != null ? ` (${pct(C.comprometido_pct)} da renda líquida)` : ""}. Ainda faltam <b class="num">${brl(C.parcelas_saldo)}</b> em parcelas.</p></div>
+    <div class="two">
+      <div class="card"><div class="card-head"><h3>Parcelas em aberto</h3><span class="num">${brl(C.parcelas_mensal)}/mês</span></div><div class="rows">${parc}</div></div>
+      <div class="card"><div class="card-head"><h3>Assinaturas e recorrentes</h3><span class="num">${brl(C.assinaturas_mensal)}/mês</span></div><div class="rows">${ass}</div></div>
+    </div>${fat}</section>`));
+})();
+
+/* ---------- empresa ---------- */
+if (D.empresa) {
+  const E = D.empresa;
+  const custos = D.categorias.filter(c => c.grupo === "empresa");
+  app.append($(`<section><div class="sec-head"><p class="eyebrow">À parte</p><h2>Empresa</h2></div>
+    <div class="card">
+      <div class="rows">${custos.map(c => `<div class="row"><span class="n">${esc(c.nome)}</span><span class="v">${brl(c.media_mensal)}${sufixo}</span>${deltaTag(c)}</div>`).join("") || `<p class="empty">Sem custos de empresa nas contas pessoais.</p>`}</div>
+      <p class="small muted">${E.saldo_conta != null ? `Saldo da conta ${esc(ID.empresa_nome || "da empresa")}: <b class="num">${brl(E.saldo_conta)}</b>. ` : ""}${E.fatura_cartao != null ? `Fatura ${esc(ID.empresa_cartao || "do cartão da empresa")} em aberto: <b class="num">${brl(E.fatura_cartao)}</b>. ` : ""}${esc(E.obs || "")}</p>
+    </div></section>`));
+}
+
+/* ---------- pauta ---------- */
+if (D.pauta.length) {
+  app.append($(`<section><div class="sec-head"><p class="eyebrow">Para a conversa</p><h2>Pauta de decisões</h2></div>
+    <ol class="pauta">${D.pauta.map(p => `<li><div style="display:grid;gap:4px;min-width:0">${p.tema ? `<span class="tema">${esc(p.tema)}</span>` : ""}<span class="q">${esc(p.pergunta)}</span>${p.dado ? `<span class="small muted">${esc(p.dado)}</span>` : ""}</div></li>`).join("")}</ol></section>`));
+}
+
+/* ---------- avisos + método ---------- */
+app.append($(`<section class="metodo">
+  ${D.avisos.length ? `<p><b>Pontos de atenção nos dados</b></p><ul class="avisos">${D.avisos.map(a => `<li>${esc(a)}</li>`).join("")}</ul>` : ""}
+  <p><b>Como os números são calculados.</b> Gastos por categoria vêm do Organizze por data da compra e incluem cartão de crédito. "Renda líquida" = salários − custos da empresa (impostos, contabilidade e assinaturas pagos pela conta ou cartão PJ)${ID.nota_renda ? ", porque " + esc(ID.nota_renda) : ""}. "Sobra" = renda líquida − (fixos + variáveis); patrimônio e ${EVENTO.toLowerCase()} ficam de fora porque não são consumo do dia a dia. "Resultado final" inclui tudo, inclusive receitas extras. Resgate de investimento não conta como receita extra: abate do que foi guardado. Transferências entre contas próprias não contam como receita nem despesa.</p>
+  ${D.checagens && D.checagens.length ? `<p><b>Checagens feitas neste relatório</b></p><ul class="checks small">${D.checagens.map(c => `<li class="${c.ok ? "" : "falha"}">${esc(c.nome)}${c.detalhe ? ` <span class="muted">(${esc(c.detalhe)})</span>` : ""}</li>`).join("")}</ul>` : ""}
+  ${D.conferencia ? `<p class="small muted"><b>Conferência:</b> ${D.conferencia.ok ? "a soma das categorias bate com o relatório de categorias do Organizze no período" : "a soma das categorias NÃO bate com o relatório do Organizze; veja os avisos"} (despesas ${brl(D.conferencia.despesas[0], {cents: true})}, receitas ${brl(D.conferencia.receitas[0], {cents: true})}).</p>` : ""}
+</section>`));
+
+/* ---------- roteiro da conversa (aba 2) ---------- */
+(function roteiro() {
+  const fm = fa.media;
+  const cat = (n) => (D.categorias.find(c => c.nome === n) || { media_mensal: 0 }).media_mensal;
+  const comerSair = cat("Alimentação") + cat("Rolês");
+  const reservas = D.saldos.filter(s => s.tipo === "reserva").reduce((a, s) => a + (s.fim ?? 0), 0);
+  const alvo = 6 * fm.consumo, falta = Math.max(0, alvo - reservas);
+  const metaPct = D.meta ? D.meta.meta_sugerida : 0.1;
+  const passo = (titulo, tempo, corpo) => `<li><div class="corpo"><h3>${titulo}${tempo ? ` <span class="tempo">${tempo}</span>` : ""}</h3>${corpo}</div></li>`;
+  painelRot.append($(`<section><div class="sec-head"><p class="eyebrow">Para sentarem juntos · 60 a 90 minutos</p><h2>Roteiro da conversa</h2>
+    <p class="muted">Primeiro o que vocês querem, depois a conta. Os números abaixo vêm deste relatório (${esc(D.titulo)}).</p></div>
+    <ol class="passos">
+      ${passo("Sonhar antes de fazer conta", "15 min", `<p>Cada um responde sozinho, por escrito: <b>o que quero que a gente tenha ou viva daqui a 1 ano? 3 anos? 10 anos?</b> Depois leiam juntos, sem julgar e sem cortar nada.</p>`)}
+      ${passo("Agrupar", "10 min", `<p>Juntem as respostas em temas: segurança (reserva), casa, viagens, carro, filhos, aposentadoria, outros. O que apareceu nas duas listas costuma ser prioridade.</p>`)}
+      ${passo("Escolher 2 ou 3 prioridades para os próximos 12 meses", "10 min", `<p>O resto vai para uma lista de "depois", sem descartar. Se ainda não existe, a reserva de emergência entra primeiro: ela protege todos os outros objetivos.</p>`)}
+      ${passo("Dar valor e prazo, e dividir por mês", "15 min", `<p>Cada objetivo vira <b>quanto</b>, <b>até quando</b> e <b>quanto por mês</b>.</p>
+        <div class="conta">Exemplo, reserva de 6 meses: 6 × ${brl(fm.consumo)} de consumo = <b class="num">${brl(alvo)}</b>. Em reservas no fim do período: <span class="num">${brl(reservas)}</span>. ${falta > 0 ? `Faltam <b class="num">${brl(falta)}</b>, uns <b class="num">${brl(falta / 12)}/mês</b> em 12 meses.` : "Já está coberta."}</div>`)}
+      ${passo("Ver o que cabe", "15 min", `<p>Hoje a sobra do mês a mês está em <b class="num ${fm.sobra_estrutural >= 0 ? "pos" : "neg"}">${brl(fm.sobra_estrutural)}/mês</b>. Cada objetivo precisa de uma fonte de dinheiro:</p>
+        <ul><li><b>Cortar em algum lugar.</b>${comerSair ? ` Comer fora + Rolês hoje somam <span class="num">${brl(comerSair)}/mês</span>.` : ""}</li><li><b>Alongar o prazo.</b></li><li><b>Usar receitas extras</b> (presentes, vendas, 13º).</li></ul>
+        <p>Essa troca é a decisão de verdade da conversa. Referência: ${pct(metaPct)} da renda líquida dá <span class="num">${brl(metaPct * fm.renda_liquida)}/mês</span>.</p>`)}
+      ${passo("Combinar 2 ou 3 regras simples", "10 min", `<ul>
+        <li><b>Pagar-se primeiro:</b> transferência automática para o objetivo no dia em que o salário cai.</li>
+        <li><b>Receita extra tem destino:</b> vai direto para um objetivo, sem passar pela conta do dia a dia.</li>
+        <li><b>Valor livre para cada um</b>, sem prestar contas (a categoria Mesadinha serve para isso).</li></ul>`)}
+      ${passo("Revisar com o relatório", "", `<p>Uma vez por mês, 30 minutos com o relatório. A cada trimestre, revejam os objetivos: valores, prazos e se algum mudou.</p>`)}
+    </ol></section>`));
+  painelRot.append($(`<section><div class="sec-head"><p class="eyebrow">Para a conversa render</p><h2>Combinados</h2></div>
+    <ul class="regras">
+      <li>Os números mostram o casal, não um culpado.</li>
+      <li>Decidam por consenso: se um não topa, a decisão fica para a próxima.</li>
+      <li>Saiam com 1 ou 2 ações concretas, com dono e data, não com dez.</li>
+      <li>Anotem os objetivos combinados para o próximo relatório acompanhar.</li>
+    </ul></section>`));
+})();
+</script>

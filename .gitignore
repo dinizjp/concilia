@@ -1,0 +1,8 @@
+config/
+conciliacao/log/
+conciliacao/execucoes.log
+dados/
+relatorios/
+indice.md
+.DS_Store
+__pycache__/
