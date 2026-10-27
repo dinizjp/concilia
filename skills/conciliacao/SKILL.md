@@ -7,6 +7,11 @@ description: Concilia cartões de crédito e contas correntes com o Organizze. P
 
 Compara o extrato real (Pluggy) com o que está lançado no Organizze e aponta só o que falta lançar.
 
+**Destino:** Organizze, pelo conector MCP (`organizze:*`). O fluxo (extrato → diff por valor →
+categorizar → lançar → log) não depende do Organizze. Para usar outro app (outro gerenciador
+financeiro com MCP ou API, ou uma planilha), troque só as chamadas `organizze:` pelas equivalentes
+e registre a troca em `config/regras.md`.
+
 ## Antes de tudo: leia a configuração do usuário
 
 A raiz do projeto é `~/concilia`. Leia sempre:
@@ -18,7 +23,10 @@ A raiz do projeto é `~/concilia`. Leia sempre:
 - `~/concilia/config/regras.md`: casos especiais desta casa (assinaturas com IOF, agrupamentos
   manuais etc.).
 
-Se `config/` não existir, o projeto não foi instalado: peça para rodar `~/concilia/instalar.sh`.
+Se `config/` não existir, o projeto não foi instalado: peça para rodar `~/concilia/instalar.sh` (macOS) ou `python3 ~/concilia/instalar.py` (Linux/Windows).
+
+**Sistema:** funciona em macOS, Linux e Windows. Os comandos abaixo usam `python3`; no Windows
+use `python` (ou `py`) e o caminho `%USERPROFILE%\concilia`, se `~` não resolver.
 
 **Regra de ouro (modo conversa): mostre a lista do que falta ANTES de lançar qualquer coisa.** Nunca
 use `mass_create_transactions` sem aprovação explícita nesta conversa, mesmo que o padrão pareça
@@ -164,7 +172,9 @@ Formato:
 
 ## Modo diário automático
 
-`~/concilia/conciliacao/rodar.sh`, agendado pelo `instalar.sh`, chama esta skill sem ninguém
+A tarefa agendada chama esta skill sem ninguém olhando: `rodar.sh` (macOS, launchd, via
+`instalar.sh --agendar`) ou `rodar.py` (Linux com cron, Windows com Agendador de Tarefas, via
+`instalar.py --agendar`). Ela sem ninguém
 olhando. Nesse modo:
 
 1. **Leia o estado:** o último arquivo de `ls -1 ~/concilia/conciliacao/log/` (a ordem alfabética

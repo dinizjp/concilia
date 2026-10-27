@@ -39,10 +39,11 @@ Sem baixar fatura, sem abrir email, sem digitar compra por compra.
 
 ## Requisitos
 
-- **macOS** (a tarefa diária usa o launchd) e **Python 3** (só biblioteca padrão)
+- **macOS, Linux ou Windows**, com **Python 3** (só biblioteca padrão)
 - **[Claude Code](https://claude.com/claude-code)** logado na sua conta Claude
 - **[Organizze](https://www.organizze.com.br)**, com o **conector do Organizze** ativado na sua
   conta Claude (Configurações → Conectores). É por ele que o Claude lê e lança no Organizze.
+  Basta o **plano manual, o mais barato** (veja abaixo).
 - **Conta no [Meu Pluggy](https://meu.pluggy.ai)** e no **[Dashboard da Pluggy](https://dashboard.pluggy.ai)**.
   É grátis para as suas próprias contas (até 5 conexões do mesmo titular).
 
@@ -64,7 +65,9 @@ O passo a passo oficial, com vídeo, está em **https://www.pluggy.ai/meu-pluggy
 
 ```bash
 git clone https://github.com/dinizjp/concilia.git ~/concilia
-cd ~/concilia && ./instalar.sh
+cd ~/concilia
+./instalar.sh              # macOS
+python3 instalar.py        # Linux e Windows (no Windows: python instalar.py)
 ```
 
 O instalador cria `config/` a partir de `config.exemplo/` e liga as skills no Claude Code.
@@ -77,7 +80,7 @@ Depois preencha:
 | `config/categorias.md` | Suas regras de categoria (comece pelo exemplo; o Claude completa com você) |
 | `config/relatorio.json` | Nomes e classificação das categorias para o relatório |
 
-> Clone fora de `~/Documents` e `~/Desktop`: o macOS bloqueia a tarefa agendada nessas pastas.
+> No macOS, clone fora de `~/Documents` e `~/Desktop`: o sistema bloqueia a tarefa agendada nessas pastas.
 
 ### 3. Primeira conciliação (com você olhando)
 
@@ -91,13 +94,38 @@ Ele mostra o que falta e só lança depois do seu ok. Ao final, grava o log com 
 
 ### 4. Ligar a tarefa diária
 
-```bash
-./instalar.sh --agendar
-```
+| Sistema | Ligar | Desligar | Agenda com |
+|---|---|---|---|
+| macOS | `./instalar.sh --agendar` | `launchctl bootout gui/$(id -u)/com.concilia.diaria` | launchd + `rodar.sh` (zsh) |
+| Linux | `python3 instalar.py --agendar` | `python3 instalar.py --desagendar` | cron + `rodar.py` |
+| Windows | `python instalar.py --agendar` | `python instalar.py --desagendar` | Agendador de Tarefas + `rodar.py` |
 
-Roda todo dia às 20h (troque em `CONCILIA_HORA` no `.env`). **Instale em um Mac só**, senão
-duas máquinas lançam em dobro. Para desligar:
-`launchctl bootout gui/$(id -u)/com.concilia.diaria`.
+Roda todo dia às 20h (troque em `CONCILIA_HORA` no `.env`). **Instale em um computador só**,
+senão duas máquinas lançam em dobro. Se o computador estiver desligado no horário, a rodada
+daquele dia não acontece; a do dia seguinte pega o que ficou para trás.
+
+## Por que Pluggy + Organizze manual?
+
+O Organizze tem conciliação automática por Open Finance própria, mas **ela só existe nos planos
+mais caros**. Aqui você usa o **plano manual, o mais barato**: a Pluggy (grátis para uso pessoal)
+traz o extrato do banco e o Claude faz o trabalho de conciliar, categorizar com as **suas**
+regras e lançar. De quebra, você decide o que entra e o que não entra (transferências,
+empréstimos, dinheiro que só passa pela conta), coisa que a importação automática costuma
+bagunçar.
+
+### Não usa Organizze?
+
+O Organizze é só o **destino** dos lançamentos. O resto do fluxo (extrato pela Pluggy → diff por
+valor → categorias → log) não depende dele. Para usar outro app, como outro gerenciador
+financeiro com MCP ou API, ou uma planilha do Google Sheets pelo conector do Claude:
+
+1. Na skill `skills/conciliacao/SKILL.md`, troque as chamadas `organizze:*` (ler fatura e
+   extrato, sugerir categoria, lançar) pelas equivalentes do seu app.
+2. Na `rodar.sh`/`rodar.py`, troque `mcp__claude_ai_organizze` em `--allowedTools` pelo conector
+   do seu app.
+3. Se usar o relatório, ajuste a coleta em `skills/relatorio-financeiro/SKILL.md`.
+
+Adaptou para outro destino? Pull request é bem-vindo.
 
 ## Uso no dia a dia
 
@@ -124,19 +152,20 @@ duas máquinas lançam em dobro. Para desligar:
 
 ```
 concilia/
-├── instalar.sh              # config, atalho ~/concilia, skills e tarefa diária
+├── instalar.sh              # instalador macOS (config, atalho ~/concilia, skills, launchd)
+├── instalar.py              # instalador Linux/Windows (cron / Agendador de Tarefas)
 ├── pluggy/pluggy.py         # leitura da Pluggy (só leitura, só stdlib)
 ├── skills/
 │   ├── conciliacao/         # concilia cartão e conta, modo diário automático
 │   └── relatorio-financeiro/ # relatório mensal/trimestral/anual em HTML
-├── conciliacao/             # rodar.sh, launchd.plist e log/ (seu, não versionado)
+├── conciliacao/             # rodar.sh (macOS), rodar.py (Linux/Windows), log/ (seu, não versionado)
 ├── config.exemplo/          # modelo do config/
 └── config/                  # SEU: credenciais, contas, regras (fica no .gitignore)
 ```
 
 ## Privacidade
 
-- Tudo roda no seu Mac.
+- Tudo roda no seu computador.
 - As credenciais ficam em `config/.env`, que está no `.gitignore`.
 - O Claude só lança no Organizze o que as suas regras permitem.
 - O `pluggy.py` só lê, nunca escreve.
