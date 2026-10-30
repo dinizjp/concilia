@@ -13,3 +13,16 @@ cd "$ROOT" || exit 1
     --allowedTools "Skill" "ToolSearch" "Read" "Write" "Edit" "Bash(python3 *)" "Bash(ls *)" "mcp__claude_ai_organizze"
   echo
 } >> conciliacao/execucoes.log 2>&1
+
+# Aviso no Mac quando sobrar pendência (o lembrete do SessionStart só aparece ao abrir o Claude).
+# ponytail: display alert nativo em vez de notificação, porque notificação do osascript não aceita clique.
+P=$(sed -n 's/^- pendencias_abertas: *//p' "$(ls -1 conciliacao/log/*.md | tail -1)")
+if [[ -n "$P" && "$P" != nenhum* ]]; then
+  afplay /System/Library/Sounds/Glass.aiff &
+  R=$(osascript -e "display alert \"Conciliação: ficaram pendências\" message \"${P//\"/}\" buttons {\"Depois\", \"Conciliar agora\"} default button 2 giving up after 7200" 2>/dev/null)
+  CMD="cd '$ROOT' && CLAUDE_CONFIG_DIR='$CLAUDE_CONFIG_DIR' claude concilia"
+  if [[ "$R" == *"Conciliar agora"* ]]; then
+    if [[ -d /Applications/Ghostty.app ]]; then open -na Ghostty --args -e zsh -ic "$CMD"
+    else osascript -e "tell app \"Terminal\" to do script \"$CMD\"" -e 'tell app "Terminal" to activate'; fi
+  fi
+fi

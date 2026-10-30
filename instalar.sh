@@ -34,4 +34,10 @@ if [[ "$1" == "--agendar" ]]; then
   launchctl bootout "gui/$(id -u)/$LABEL" 2>/dev/null || true
   launchctl bootstrap "gui/$(id -u)" "$PLIST"
   echo "Conciliação diária agendada para ${CONCILIA_HORA:-20}h. Instale em um Mac só."
+  # relatório mensal por e-mail (dias 1 a 3, 45 min depois da conciliação); precisa de SMTP_USUARIO/EMAIL_PARA no .env
+  PLIST="$HOME/Library/LaunchAgents/com.concilia.relatorio.plist"
+  sed -e "s#__ROOT__#$ROOT#g" -e "s#__HORA__#${CONCILIA_HORA:-20}#g" "$ROOT/conciliacao/launchd-relatorio.plist" > "$PLIST"
+  launchctl bootout "gui/$(id -u)/com.concilia.relatorio" 2>/dev/null || true
+  launchctl bootstrap "gui/$(id -u)" "$PLIST"
+  echo "Relatório mensal por e-mail agendado (dias 1 a 3)."
 fi

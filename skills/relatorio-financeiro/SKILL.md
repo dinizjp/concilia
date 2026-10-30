@@ -178,3 +178,18 @@ que a categoria seja explicitamente individual.
    dados a resolver no Organizze.
 
 Sem a ferramenta Artifact, entregue o HTML como arquivo e diga onde está.
+
+## Modo automático (e-mail mensal)
+
+`conciliacao/rodar-relatorio.sh` (launchd, dias 1 a 3) chama esta skill sem ninguém olhando, só
+depois de a conciliação fechar o mês. O próprio script manda o e-mail com o resumo e o link. Nesse modo:
+
+1. Período mensal do slug informado. Siga as seções 1 a 5 normalmente, com todas as checagens.
+2. Não há a quem perguntar:
+   - salário baixo ou pico sem explicação nos lançamentos vão para `avisos`, sem `confirmados`;
+   - categoria nova sem classificação também vai para `avisos`. Não edite `relatorio.json` sozinho.
+3. Se o script sair com `NÃO PUBLICAR`, pare. Escreva o motivo em uma linha em
+   `~/concilia/relatorios/<slug>.erro` e não publique.
+4. Publique o artefato e escreva a linha no `indice.md` com o link, como na seção 5. O e-mail usa
+   esse link. Sem link, ele manda o HTML em anexo.
+5. Não mande e-mail você mesmo: o script cuida disso.
