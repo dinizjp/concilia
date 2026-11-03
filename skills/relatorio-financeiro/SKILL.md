@@ -70,6 +70,15 @@ receitas e despesas e **caixa por conta** só para saldos. Não tente bater um c
      resgate. O total de receitas não muda e a conferência continua batendo. Rendimento (juros)
      continua sendo receita extra.
    - Reembolso de algo já lançado como despesa merece nota em `avisos`, porque a despesa aparece cheia.
+   - **Receita lançada como ajuste de saldo** (`type: "InitialAmount"` no `list_transactions`):
+     o usuário costuma registrar rendimentos e outras entradas reais ajustando o saldo da conta, com
+     a descrição dizendo o que é ("Rendimentos", "Sobra casamento"). As categorias do Organizze
+     **não contam** esses lançamentos. Leia a descrição e decida:
+     - descrição que diz o que entrou (rendimento, presente, sobra, venda…) → é receita. Some o
+       valor na coluna da categoria daquele mês em `meses_colunas`, liste em `receitas_extras` se
+       ≥ R$ 200 e some o mesmo valor em `conferencia.receitas_total`;
+     - "Ajuste de Saldo" (ou sem descrição) → correção de centavos, fica fora.
+     Faça isso em todos os meses de `meses_colunas`, não só no foco. Não peça para relançar.
 3. **Saldos:** para cada conta em `config.contas`, rode
    `transactions_list_results(account_id, start_date=<início do foco>, end_date=<fim do foco>)`:
    `inicio = previous_balance_cents`, `fim = balance_cents`. Pule as contas com 0 nos dois.
@@ -87,9 +96,13 @@ receitas e despesas e **caixa por conta** só para saldos. Não tente bater um c
      Ignore esses itens. Para `contas_a_vencer_30d`, some com Python só as despesas de **contas**
      com `days_until_due >= 0`.
    - Se algo vier ambíguo, prefira listar menos e avisar a inventar.
-6. **Empresa** (se houver em `identidade.empresa_nome`): saldo da conta PJ (passo 3) e fatura do
+6. **Dinheiro pessoal** (se `relatorio-notas.md` listar contas ou cartões pessoais): monte o bloco
+   `pessoal` de `references/formato-dados.md` com `list_transactions` de cada conta e cartão
+   pessoal no foco, somado por mês e categoria com Python, mais o pró-labore e o saldo da conta.
+   Não subtraia nada à mão: o script tira das colunas da casa e da conferência.
+7. **Empresa** (se houver em `identidade.empresa_nome`): saldo da conta PJ (passo 3) e fatura do
    cartão PJ (passo 4). Os custos saem sozinhos das categorias do grupo `empresa`.
-7. **Conferência (2ª checagem, sempre):** `get_categories_report(start_date, end_date)` do foco
+8. **Conferência (2ª checagem, sempre):** `get_categories_report(start_date, end_date)` do foco
    (um por ano civil se o período for longo). Ponha em `conferencia: {despesas_total, receitas_total}`
    (centavos). O script compara com a soma das colunas e avisa se divergir mais de R$ 1. Não
    publique com divergência sem explicar.

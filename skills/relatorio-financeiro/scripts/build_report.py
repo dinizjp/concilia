@@ -39,8 +39,9 @@ def classificar(config):
     return mapa_desp, mapa_rec
 
 
-def resumo_mes(dados_mes, mapa_desp, mapa_rec, avisos):
+def resumo_mes(dados_mes, mapa_desp, mapa_rec, avisos, pessoal=0):
     r = {g: 0 for g in GRUPOS_DESPESA}
+    r["pessoal"] = pessoal
     r["receita_recorrente"] = 0
     r["receita_extra"] = 0
     r["receita_resgate"] = 0
@@ -64,10 +65,10 @@ def resumo_mes(dados_mes, mapa_desp, mapa_rec, avisos):
     r["consumo"] = r["fixo"] + r["variavel"]
     # resgate é dinheiro guardado voltando: abate do aporte, não é renda nova
     r["aporte_liquido"] = r["patrimonio"] - r["receita_resgate"]
-    # salário pode entrar bruto numa conta PJ; os custos da empresa saem dele antes do consumo
-    r["renda_liquida"] = r["receita_recorrente"] - r["empresa"]
+    # salário pode entrar bruto numa conta PJ; os custos da empresa e o pró-labore pessoal saem dele antes do consumo
+    r["renda_liquida"] = r["receita_recorrente"] - r["empresa"] - r["pessoal"]
     r["sobra_estrutural"] = r["renda_liquida"] - r["consumo"]
-    r["sobra_total"] = (r["receita_recorrente"] + r["receita_extra"] + r["receita_resgate"]) - sum(r[g] for g in GRUPOS_DESPESA)
+    r["sobra_total"] = (r["receita_recorrente"] + r["receita_extra"] + r["receita_resgate"]) - sum(r[g] for g in GRUPOS_DESPESA) - r["pessoal"]
     r["taxa_poupanca"] = round(r["sobra_estrutural"] / r["renda_liquida"], 4) if r["renda_liquida"] > 0 else None
     return r
 
@@ -204,6 +205,28 @@ def main():
                         sys.exit(f"ERRO: '{cat}' tem {len(vals)} valores para {len(col['meses'])} meses")
                     if vals[i]:
                         md.setdefault(tipo, {})[cat] = int(vals[i])
+
+    # dinheiro pessoal (conta e cartões de uma pessoa só): as categorias do Organizze somam tudo,
+    # então o que saiu dessas contas sai das colunas da casa e vai para a aba da pessoa
+    pessoal = dados.get("pessoal", {})
+    prolabore, tirado = {}, {"despesas": 0, "receitas": 0}
+    for quem, p in pessoal.items():
+        for m, v in p.get("prolabore", {}).items():
+            prolabore[m] = prolabore.get(m, 0) + int(v)
+        for tipo in ("despesas", "receitas"):
+            for m, cats_m in p.get(tipo, {}).items():
+                md = meses_dados.setdefault(m, {"despesas": {}, "receitas": {}}).setdefault(tipo, {})
+                for cat, v in cats_m.items():
+                    resto = int(md.get(cat, 0)) - int(v)
+                    if resto < 0:
+                        avisos.add(f"Pessoal ({p.get('nome', quem)}): '{cat}' em {m} tem {int(v)/100:,.2f} nas contas pessoais, mais que o total da categoria ({int(md.get(cat, 0))/100:,.2f}). Confira a coleta.")
+                        resto = 0
+                    if resto:
+                        md[cat] = resto
+                    else:
+                        md.pop(cat, None)
+                    if m in dados["foco"]:
+                        tirado[tipo] += int(v)
     todos = sorted(meses_dados.keys())
     foco = sorted(dados["foco"])
     faltando = [m for m in foco if m not in meses_dados]
@@ -217,7 +240,7 @@ def main():
 
     serie = []
     for m in todos:
-        r = resumo_mes(meses_dados[m], mapa_desp, mapa_rec, avisos)
+        r = resumo_mes(meses_dados[m], mapa_desp, mapa_rec, avisos, prolabore.get(m, 0))
         r["mes"] = m
         r["label"] = label_mes(m)
         r["no_foco"] = m in foco
@@ -228,7 +251,7 @@ def main():
         if not meses:
             return None
         chaves = ["receita_recorrente", "renda_liquida", "receita_extra", "receita_resgate", "aporte_liquido",
-                  "consumo", "sobra_estrutural", "sobra_total"] + GRUPOS_DESPESA
+                  "consumo", "sobra_estrutural", "sobra_total", "pessoal"] + GRUPOS_DESPESA
         tot = {k: sum(por_mes[m][k] for m in meses) for k in chaves}
         med = {k: round(tot[k] / len(meses)) for k in chaves}
         taxa = round(tot["sobra_estrutural"] / tot["renda_liquida"], 4) if tot["renda_liquida"] > 0 else None
@@ -267,7 +290,10 @@ def main():
     if conf:
         desp = sum(foco_ag["total"][g] for g in GRUPOS_DESPESA)
         rec = foco_ag["total"]["receita_recorrente"] + foco_ag["total"]["receita_extra"] + foco_ag["total"]["receita_resgate"]
-        conferencia = {"despesas": [desp, conf.get("despesas_total")], "receitas": [rec, conf.get("receitas_total")]}
+        # o relatório do Organizze inclui as contas pessoais; tira o mesmo valor que saiu das colunas
+        ref_desp, ref_rec = conf.get("despesas_total"), conf.get("receitas_total")
+        conferencia = {"despesas": [desp, None if ref_desp is None else int(ref_desp) - tirado["despesas"]],
+                       "receitas": [rec, None if ref_rec is None else int(ref_rec) - tirado["receitas"]]}
         for nome, (calc, ref) in conferencia.items():
             if ref is not None and abs(calc - int(ref)) > 100:
                 avisos.add(f"Conferência: {nome} somam {calc/100:,.2f} nas categorias, mas o relatório do Organizze dá {int(ref)/100:,.2f}. Falta ou sobra categoria na coleta.")
@@ -354,6 +380,22 @@ def main():
             if v > 100000 and v > 3 * max(base, 1):
                 picos.append((c["nome"], m, v, base))
 
+    pessoal_saida = []
+    for quem, p in pessoal.items():
+        cats_p, rec_p = {}, 0
+        for mes in foco:
+            for cat, v in p.get("despesas", {}).get(mes, {}).items():
+                cats_p[cat] = cats_p.get(cat, 0) + int(v)
+            rec_p += sum(int(v) for v in p.get("receitas", {}).get(mes, {}).values())
+        prol = sum(int(p.get("prolabore", {}).get(mes, 0)) for mes in foco)
+        desp = sum(cats_p.values())
+        pessoal_saida.append({
+            "quem": p.get("nome", quem), "artigo": p.get("artigo", "de"), "contas": p.get("contas", []),
+            "prolabore": prol, "receitas": rec_p, "despesas": desp, "sobra": prol + rec_p - desp,
+            "categorias": sorted(({"nome": c, "total": v} for c, v in cats_p.items()), key=lambda x: -x["total"]),
+            "saldo": p.get("saldo"),
+        })
+
     saida = {
         "tipo": dados.get("tipo", "mensal"),
         "titulo": dados.get("titulo") or " – ".join(sorted({label_mes(foco[0]), label_mes(foco[-1])})),
@@ -379,6 +421,7 @@ def main():
         "patrimonio": dados.get("patrimonio"),
         "compromissos": compromissos,
         "empresa": dados.get("empresa"),
+        "pessoal": pessoal_saida,
         "identidade": config.get("identidade", {}),
         "destaques": dados.get("destaques", []),
         "pauta": dados.get("pauta", []),
@@ -396,8 +439,10 @@ def main():
     print(f"OK -> {args.saida}")
     print(f"Foco {foco[0]}..{foco[-1]} ({len(foco)} mês/meses) | comparação {cmp_atual} vs {ref_meses}")
     for k in ["receita_recorrente", "renda_liquida", "receita_extra", "receita_resgate", "fixo", "variavel", "patrimonio",
-              "aporte_liquido", "evento", "empresa", "consumo", "sobra_estrutural", "sobra_total"]:
+              "aporte_liquido", "evento", "empresa", "pessoal", "consumo", "sobra_estrutural", "sobra_total"]:
         print(f"  {k:18} total {fa['total'][k]/100:>12,.2f}  média/mês {fa['media'][k]/100:>11,.2f}")
+    for p in pessoal_saida:
+        print(f"  pessoal {p['quem']}: entrou {(p['prolabore'] + p['receitas'])/100:,.2f}, gastou {p['despesas']/100:,.2f}, sobrou {p['sobra']/100:,.2f} (tirado da casa: despesas {tirado['despesas']/100:,.2f}, receitas {tirado['receitas']/100:,.2f})")
     print(f"  taxa de poupança estrutural: {fa['taxa_poupanca']}")
     if saida["meta"]:
         print(f"  meta sugerida: {saida['meta']}")

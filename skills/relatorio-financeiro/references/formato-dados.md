@@ -32,6 +32,15 @@ Datas de mês como `AAAA-MM`.
   "assinaturas": [ { "nome": "Spotify", "valor_mensal": 2190 } ],
   "contas_a_vencer_30d": 1200020,
   "empresa": { "saldo_conta": 74732, "fatura_cartao": 27883, "obs": "" },
+  "pessoal": {
+    "ana": {
+      "nome": "Ana", "artigo": "da", "contas": ["Conta pessoal"],
+      "prolabore": { "2026-11": 80000 },
+      "despesas": { "2026-11": { "Alimentação": 23000, "Rolês": 15000 } },
+      "receitas": { "2026-11": { "Outras receitas": 3000 } },
+      "saldo": { "inicio": 7157, "fim": 12000 }
+    }
+  },
   "conferencia": { "fonte": "get_categories_report 2026-09", "despesas_total": 1890000, "receitas_total": 1950000 },
   "comparar": { "atual": ["2026-01", "2026-02"], "ref": ["2025-01", "2025-02"] },
   "confirmados": { "salario_baixo": ["2026-06", "2026-07"] },
@@ -56,4 +65,13 @@ Regras:
 - `comparar` (opcional): força a comparação entre dois conjuntos de meses. Use no panorama de vários anos para comparar o ano atual com os mesmos meses do ano anterior.
 - Categorias de `config.dividir_por_conta` entram já separadas em `<nome> (PF)` e `<nome> (PJ)`.
 - `receitas_extras`: itens com `natureza` começando por "resgate" (ex.: "resgate de investimento") vão para a tabela de resgates e são conferidos contra a categoria de receita Investimentos (`grupos_receita.resgate`). Resgate lançado em outra categoria: mova o valor do mês para a coluna Investimentos.
+- `pessoal` (opcional): dinheiro de uma pessoa só (conta e cartões pessoais), uma chave por pessoa.
+  - `despesas`/`receitas`: por mês e por categoria, só do que passou por essas contas e cartões
+    (`list_transactions` com o `account_id`/`credit_card_id` delas). Monte `meses_colunas` e
+    `conferencia` com os números **cheios** do Organizze: o script tira esses valores das colunas da
+    casa e da conferência sozinho, e mostra tudo numa aba própria.
+  - `prolabore`: salário pessoal que sai da conta da empresa direto para a pessoa (transferência, não
+    aparece em categoria). O script abate da renda líquida da casa, como os custos da empresa.
+  - `saldo` (opcional): saldo da conta pessoal no início e no fim do foco.
+  - `artigo` (opcional): "do" ou "da" para o título da aba ("Gastos da Ana"). Padrão: "de".
 - `confirmados` (opcional): fatos já confirmados com o usuário que, sem isso, fariam uma checagem falhar. Hoje: `salario_baixo` (meses com salário < 60% da mediana que são reais).

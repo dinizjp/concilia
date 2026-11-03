@@ -191,20 +191,24 @@ app.append($(`<header>
 </header>`));
 
 /* ---------- abas ---------- */
+const PESSOAL = D.pessoal || [];
+const slugPessoa = (q) => "pessoal-" + String(q).toLowerCase().normalize("NFD").replace(/[^a-z0-9]+/g, "");
 const tabs = $(`<div class="tabs" role="tablist">
-  <button role="tab" type="button" id="tab-relatorio" aria-controls="relatorio" aria-selected="true">Relatório</button>
+  <button role="tab" type="button" id="tab-relatorio" aria-controls="relatorio" aria-selected="true">Relatório da casa</button>
   <button role="tab" type="button" id="tab-roteiro" aria-controls="roteiro" aria-selected="false">Roteiro da conversa</button>
+  ${PESSOAL.map(p => `<button role="tab" type="button" id="tab-${slugPessoa(p.quem)}" aria-controls="${slugPessoa(p.quem)}" aria-selected="false">Gastos ${esc(p.artigo)} ${esc(p.quem)}</button>`).join("")}
 </div>`);
 const painelRel = $(`<div class="panel" id="relatorio" role="tabpanel" aria-labelledby="tab-relatorio"></div>`);
 const painelRot = $(`<div class="panel" id="roteiro" role="tabpanel" aria-labelledby="tab-roteiro" hidden></div>`);
-root.append(tabs, painelRel, painelRot);
+const paineisPes = PESSOAL.map(p => $(`<div class="panel" id="${slugPessoa(p.quem)}" role="tabpanel" aria-labelledby="tab-${slugPessoa(p.quem)}" hidden></div>`));
+root.append(tabs, painelRel, painelRot, ...paineisPes);
 app = painelRel;
 const abrir = (qual) => {
   tabs.querySelectorAll("button").forEach(b => b.setAttribute("aria-selected", String(b.getAttribute("aria-controls") === qual)));
-  painelRel.hidden = qual !== "relatorio"; painelRot.hidden = qual !== "roteiro";
+  [painelRel, painelRot, ...paineisPes].forEach(p => { p.hidden = p.id !== qual; });
 };
 tabs.addEventListener("click", (e) => { const b = e.target.closest("button"); if (b) abrir(b.getAttribute("aria-controls")); });
-if (location.hash === "#roteiro") abrir("roteiro");
+if (location.hash && document.getElementById(location.hash.slice(1))?.getAttribute("role") === "tabpanel") abrir(location.hash.slice(1));
 
 /* ---------- tiles ---------- */
 const m = multi ? fa.media : fa.total;
@@ -215,7 +219,7 @@ const taxaRef = cmp && cmp.taxa_poupanca.ref !== null ? (cmpPanorama ? ` · ${es
 const pat = D.patrimonio;
 app.append($(`<section>
   <div class="tiles">
-    ${tile("Renda líquida" + sufixo, brl(m.renda_liquida), (cmpTxt("renda_liquida", true) ? cmpTxt("renda_liquida", true) + " · " : "") + `salários ${brl(m.receita_recorrente)} − empresa ${brl(m.empresa)}`)}
+    ${tile("Renda líquida" + sufixo, brl(m.renda_liquida), (cmpTxt("renda_liquida", true) ? cmpTxt("renda_liquida", true) + " · " : "") + `salários ${brl(m.receita_recorrente)} − empresa ${brl(m.empresa)}` + (m.pessoal ? ` − pró-labore pessoal ${brl(m.pessoal)}` : ""))}
     ${tile("Consumo" + sufixo, brl(m.consumo), cmpTxt("consumo", false) || "fixos + variáveis")}
     ${tile("Sobra do mês" + sufixo, `<span class="${m.sobra_estrutural >= 0 ? "pos" : "neg"}">${brl(m.sobra_estrutural)}</span>`, `${pct(fa.taxa_poupanca)} da renda líquida${taxaRef}`)}
     ${tile("Patrimônio hoje", pat ? brl(pat.liquido) : "—", pat ? `contas ${brl(pat.contas)} − faturas ${brl(pat.faturas_abertas)}` : "")}
@@ -391,10 +395,27 @@ if (D.pauta.length) {
 /* ---------- avisos + método ---------- */
 app.append($(`<section class="metodo">
   ${D.avisos.length ? `<p><b>Pontos de atenção nos dados</b></p><ul class="avisos">${D.avisos.map(a => `<li>${esc(a)}</li>`).join("")}</ul>` : ""}
-  <p><b>Como os números são calculados.</b> Gastos por categoria vêm do Organizze por data da compra e incluem cartão de crédito. "Renda líquida" = salários − custos da empresa (impostos, contabilidade e assinaturas pagos pela conta ou cartão PJ)${ID.nota_renda ? ", porque " + esc(ID.nota_renda) : ""}. "Sobra" = renda líquida − (fixos + variáveis); patrimônio e ${EVENTO.toLowerCase()} ficam de fora porque não são consumo do dia a dia. "Resultado final" inclui tudo, inclusive receitas extras. Resgate de investimento não conta como receita extra: abate do que foi guardado. Transferências entre contas próprias não contam como receita nem despesa.</p>
+  <p><b>Como os números são calculados.</b> Gastos por categoria vêm do Organizze por data da compra e incluem cartão de crédito. "Renda líquida" = salários − custos da empresa (impostos, contabilidade e assinaturas pagos pela conta ou cartão PJ)${ID.nota_renda ? ", porque " + esc(ID.nota_renda) : ""}. "Sobra" = renda líquida − (fixos + variáveis); patrimônio e ${EVENTO.toLowerCase()} ficam de fora porque não são consumo do dia a dia. "Resultado final" inclui tudo, inclusive receitas extras. Resgate de investimento não conta como receita extra: abate do que foi guardado. Transferências entre contas próprias não contam como receita nem despesa.${PESSOAL.length ? ` A casa é do casal: o dinheiro pessoal de cada um (salário pessoal e as contas e cartões só dessa pessoa) fica fora destes números e aparece na aba própria.` : ""}</p>
   ${D.checagens && D.checagens.length ? `<p><b>Checagens feitas neste relatório</b></p><ul class="checks small">${D.checagens.map(c => `<li class="${c.ok ? "" : "falha"}">${esc(c.nome)}${c.detalhe ? ` <span class="muted">(${esc(c.detalhe)})</span>` : ""}</li>`).join("")}</ul>` : ""}
   ${D.conferencia ? `<p class="small muted"><b>Conferência:</b> ${D.conferencia.ok ? "a soma das categorias bate com o relatório de categorias do Organizze no período" : "a soma das categorias NÃO bate com o relatório do Organizze; veja os avisos"} (despesas ${brl(D.conferencia.despesas[0], {cents: true})}, receitas ${brl(D.conferencia.receitas[0], {cents: true})}).</p>` : ""}
 </section>`));
+
+/* ---------- gastos pessoais (uma aba por pessoa) ---------- */
+PESSOAL.forEach((p, i) => {
+  const max = Math.max(...p.categorias.map(c => c.total), 1);
+  const entrou = p.prolabore + p.receitas;
+  paineisPes[i].append($(`<section><div class="sec-head"><p class="eyebrow">Dinheiro pessoal${multi ? " · período inteiro" : ""}</p><h2>Gastos ${esc(p.artigo)} ${esc(p.quem)}</h2>
+    <p class="small muted">Fora do relatório da casa.${p.contas && p.contas.length ? ` Contas e cartões: ${p.contas.map(esc).join(", ")}.` : ""}</p></div>
+    <div class="tiles">
+      ${tile("Entrou", brl(entrou), `salário pessoal ${brl(p.prolabore)}${p.receitas ? ` + outras entradas ${brl(p.receitas)}` : ""}`)}
+      ${tile("Gastou", brl(p.despesas), `${p.categorias.length} categoria${p.categorias.length === 1 ? "" : "s"}`)}
+      ${tile("Sobrou", `<span class="${p.sobra >= 0 ? "pos" : "neg"}">${brl(p.sobra)}</span>`, entrou ? `${pct(p.sobra / entrou)} do que entrou` : "")}
+      ${tile("Saldo", p.saldo && p.saldo.fim != null ? brl(p.saldo.fim) : "—", p.saldo && p.saldo.inicio != null ? `começou em ${brl(p.saldo.inicio)}` : "")}
+    </div>
+    <div class="card"><div class="card-head"><h3>Por categoria</h3><span class="num">${brl(p.despesas)}</span></div>
+      <div class="rows">${p.categorias.length ? p.categorias.map(c => `<div class="row"><span class="n">${esc(c.nome)}</span><span class="v">${brl(c.total)}</span></div>
+        <div class="bar"><i style="width:${(c.total / max * 100).toFixed(1)}%;background:var(--s-variavel)"></i></div>`).join("") : `<p class="empty">Sem gastos neste período.</p>`}</div></div></section>`));
+});
 
 /* ---------- roteiro da conversa (aba 2) ---------- */
 (function roteiro() {

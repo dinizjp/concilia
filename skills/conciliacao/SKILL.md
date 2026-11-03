@@ -138,6 +138,9 @@ pega a primeira linha com aquele valor, que pode não ser a que falta.
 - **Segunda checagem:** releia a fatura ou o saldo e confirme que bate. Feche com **Pendências**
   (id, problema, motivo), ou "nenhuma".
 - Quando o usuário confirmar ou corrigir uma categoria, atualize `config/categorias.md`.
+- **Categoria nova no Organizze:** na mesma hora, classifique-a em `config/relatorio.json`
+  (`grupos_despesa`: fixo, variavel, patrimonio, evento ou empresa) e diga ao usuário onde
+  entrou. Sem isso o relatório mensal automático para com `NÃO PUBLICAR`.
 
 ## Log e Estado
 

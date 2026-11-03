@@ -37,9 +37,23 @@ MARCA=$(mktemp)
     LINK=$(grep "^- $SLUG " indice.md | grep -o 'https://claude.ai/[^ ]*' | tail -1)
     python3 skills/relatorio-financeiro/scripts/email_report.py relatorios/$SLUG.html ${LINK:+--link "$LINK"} \
       && touch relatorios/$SLUG.enviado
-  elif (( DIA >= 3 )); then
-    python3 skills/relatorio-financeiro/scripts/email_report.py --aviso "Relatório financeiro de $SLUG não saiu" \
-      "A rotina do dia $DIA não conseguiu gerar o relatório. Motivo: $(cat relatorios/$SLUG.erro 2>/dev/null || echo 'ver conciliacao/execucoes.log'). Peça no Claude: relatório do mês."
+  else
+    FALHA=1
+    if (( DIA >= 3 )); then
+      python3 skills/relatorio-financeiro/scripts/email_report.py --aviso "Relatório financeiro de $SLUG não saiu" \
+        "A rotina do dia $DIA não conseguiu gerar o relatório. Motivo: $(cat relatorios/$SLUG.erro 2>/dev/null || echo 'ver conciliacao/execucoes.log'). Peça no Claude: relatório do mês."
+    fi
   fi
 } >> $LOG 2>&1
 rm -f $MARCA
+
+# Checagem falhou: avisa no Mac na hora (e-mail só sai sozinho quando tudo passa).
+if [[ -n "$FALHA" ]]; then
+  M=$(cat relatorios/$SLUG.erro 2>/dev/null || echo "ver conciliacao/execucoes.log")
+  R=$(osascript -e "display dialog \"${M//\"/}\" with title \"Relatório $SLUG não saiu\" with icon (POSIX file \"$ROOT/conciliacao/icone.png\") buttons {\"Depois\", \"Resolver agora\"} default button 2 giving up after 7200" 2>/dev/null)
+  CMD="cd '$ROOT' && CLAUDE_CONFIG_DIR='$CLAUDE_CONFIG_DIR' claude 'relatório do mês $SLUG'"
+  if [[ "$R" == *"Resolver agora"* ]]; then
+    if [[ -d /Applications/Ghostty.app ]]; then open -na Ghostty --args -e zsh -ic "$CMD"
+    else osascript -e "tell app \"Terminal\" to do script \"$CMD\"" -e 'tell app "Terminal" to activate'; fi
+  fi
+fi

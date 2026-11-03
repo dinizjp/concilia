@@ -53,6 +53,8 @@ def slim(t):
         **({"billId": cc["billId"]} if cc.get("billId") else {}),
         # data que o Nubank mostra no app/CSV (a "data" da Pluggy é o instante da compra em UTC)
         **({"data_fatura": cc["billPostDate"][:10]} if cc.get("billPostDate") else {}),
+        # final do cartão (físico ou virtual) que fez a compra: separa cartão da casa x pessoal
+        **({"cartao": cc["cardNumber"]} if cc.get("cardNumber") else {}),
     }
 
 
@@ -108,13 +110,13 @@ def brl(v):
 
 
 def to_nubank_csv(txs):
-    """Mesmo formato do CSV que o Nubank manda por email (date,title,amount)."""
-    lines = ["date,title,amount"]
+    """Mesmo formato do CSV que o Nubank manda por email (date,title,amount), mais o final do cartão."""
+    lines = ["date,title,amount,card"]
     for t in sorted(txs, key=lambda t: t.get("data_fatura") or t["data"], reverse=True):
         d = t.get("data_fatura") or t["data"]
         p = t.get("parcela")
         title = t["descricao"].replace(f" {p}", "") + f" - Parcela {p}" if p else t["descricao"]
-        lines.append(f'{d},{title.replace(",", " ")},"{brl(t["valor"])}"')
+        lines.append(f'{d},{title.replace(",", " ")},"{brl(t["valor"])}",{t.get("cartao", "")}')
     return "\n".join(lines) + "\n"
 
 
